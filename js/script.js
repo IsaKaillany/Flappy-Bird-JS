@@ -4,7 +4,7 @@ function newElement(tagName, className) { //Cria os elementos html
     return element
 }
 
-function barriers(reverse = false) { //Cria as barreiras (Função construtora, podendo ser instanciada)
+function barrier(reverse = false) { //Cria as barreiras (Função construtora, podendo ser instanciada)
     this.element = newElement('div', 'barrier')
 
     const barrierBorder = newElement('div', 'barrier-border')
@@ -16,35 +16,69 @@ function barriers(reverse = false) { //Cria as barreiras (Função construtora, 
     this.setHeight = height => barrierBody.style.height = `${height}px`
 }
 
-// const b = new barriers(true)
+// const b = new barrier(true)
 // b.setHeight(200)
 // document.querySelector('[tp-flappy]').appendChild(b.element)
 
-function duoBarrier(height, space, x) { //x = posição; space = espaço entre as barreiras
+function duoBarrier(height, gap, x) { //x = posição; gap = espaço entre as barreiras
     this.element = newElement('div', 'duo-barrier')
 
-    this.upper = new barriers(true)
-    this.lower = new barriers(false)
+    this.upper = new barrier(true)
+    this.lower = new barrier(false)
 
     this.element.appendChild(this.upper.element)
     this.element.appendChild(this.lower.element)
 
-    this.randomSpace = () => { //Sorteia e calcula o tamanho das aberturas
-        const heightUpper = Math.random() * (height - space)
-        const heightLower = height - space - heightUpper
+    this.randomGap = () => { //Sorteia e calcula o tamanho das aberturas
+        const heightUpper = Math.random() * (height - gap)
+        const heightLower = height - gap - heightUpper
 
         this.upper.setHeight(heightUpper)
         this.lower.setHeight(heightLower)
     }
 
-    this.getX = () => parent(this.element.style.left.split('px')) //Saber em qual posição a barreira está, convertendo de string para int
+    this.getX = () => parseInt(this.element.style.left.split('px')[0]) //Saber em qual posição a barreira está, convertendo de string para int
     this.setX = x => this.element.style.left = `${x}px`
     this.getWidth = () => this.element.clientWidth //Pega a largura
 
-    this.randomSpace()
+    this.randomGap()
     this.setX(x)
 }
 
-const b = new duoBarrier(700, 200, 800)
-document.querySelector('[tp-flappy]').appendChild(b.element)
+// const b = new duoBarrier(700, 200, 800)
+// document.querySelector('[tp-flappy]').appendChild(b.element)
 
+function barriers(height, width, gap, space, notifyPoint){ //height = altura da barreira; width = dimensões do jogo; gap = abertura entre as barreiras; space = espaço entre as barreiras; notifyPoint = saber quando uma barreira cruzou o centro do jogo (contagem de pontos)
+    this.pairs = [
+        new duoBarrier(height, gap, width),
+        new duoBarrier(height, gap, width + space),
+        new duoBarrier(height, gap, width + space * 2),
+        new duoBarrier(height, gap, width + space * 3)
+    ]
+
+    const movement = 3 //Responsável pelo deslocamento
+
+    this.animate = () => { //Animar as barreiras
+        this.pairs.forEach(pair => {
+            pair.setX(pair.getX() - movement)
+
+            if (pair.getX() < -pair.getWidth()) { //Reutilizar a barreira que saiu da área do jogo e mudar seu gap
+                pair.setX(pair.getX() + space * this.pairs.length)
+                pair.randomGap()
+            }
+
+            const middle = width / 2
+            const crossedMiddle = pair.getX() + movement >= middle && pair.getX() < middle
+            if (crossedMiddle) notifyPoint()             
+        })
+    }
+}
+
+const barriersVar = new barriers(700, 1200, 200, 400)
+
+const areaGame = document.querySelector('[tp-flappy]')
+barriersVar.pairs.forEach(pair => areaGame.appendChild(pair.element))
+
+setInterval(() =>{
+    barriersVar.animate()
+}, 20)
