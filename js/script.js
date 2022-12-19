@@ -74,11 +74,49 @@ function barriers(height, width, gap, space, notifyPoint){ //height = altura da 
     }
 }
 
-const barriersVar = new barriers(700, 1200, 200, 400)
+// const barriersVar = new barriers(700, 1200, 200, 400)
+// const areaGame = document.querySelector('[tp-flappy]')
+// barriersVar.pairs.forEach(pair => areaGame.appendChild(pair.element))
 
+// setInterval(() =>{
+//     barriersVar.animate()
+// }, 20)
+
+function bird(heightGame) {
+    let flying = false //Flag para indicar se o pássaro está voando ou não
+
+    this.element = newElement('img', 'bird')
+    this.element.src = './img/passaro.png'
+    
+    this.getX = () => parseInt(this.element.style.bottom.split('px')[0]) //Captura a posição do pássaro
+    this.setY = y => this.element.style.bottom = `${y}px` //Seta a posição p/ o pássaro fazer a animação em cima da altura
+
+    window.onkeydown = e => flying = true
+    window.onkeyup = e => flying = false
+
+    this.animate= () => {
+        const newY = this.getX() + (flying ? 8 : -5) //Se estiver voando soma 8, se tiver caindo soma -5
+        const heightMax = heightGame - this.element.clientHeight //Para não passar do campo de visão
+
+        //Validações
+        if (newY <= 0) {
+            this.setY(0)
+        } else if (newY >= heightMax) {
+            this.setY(heightMax)
+        } else {
+            this.setY(newY)
+        }
+    }
+    this.setY(heightGame / 2)
+}
+
+const barriersVar = new barriers(700, 1200, 200, 400)
+const birdVar = new bird(700)
 const areaGame = document.querySelector('[tp-flappy]')
+areaGame.appendChild(birdVar.element)
 barriersVar.pairs.forEach(pair => areaGame.appendChild(pair.element))
 
 setInterval(() =>{
     barriersVar.animate()
+    birdVar.animate()
 }, 20)
