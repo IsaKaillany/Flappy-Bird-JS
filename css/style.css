@@ -41,7 +41,7 @@
 .barrier-border {
     height: 30px;
     width: 130px;
-    background: linear-gradient(#639301, #A5E82E);
+    background: linear-gradient(90deg, #639301, #A5E82E);
     border: 2px solid #000000;
 }
 
@@ -49,7 +49,7 @@
 .barrier-body {
     height: 150px;
     width: 110px;
-    background: linear-gradient(#639301, #A5E82E);
+    background: linear-gradient(90deg, #639301, #A5E82E);
     border-left: 2px solid #000000;
     border-right: 2px solid #000000;
 }
