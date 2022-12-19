@@ -132,6 +132,32 @@ function progress() {
 //     birdVar.animate()
 // }, 20)
 
+function overlapping(elementA, elementB) { //Checa se os elementos estão sobrepostos
+    //Captura o retângulo associado a esses elementos
+    const a = elementA.getBoundingClientRect()
+    const b = elementB.getBoundingClientRect()
+
+    //Verifica se há sobreposição
+    const horizontal = a.left + a.width >= b.left && b.left + b.width >= a.left 
+    const vertical = a.top + a.height >= b.top && b.top + b.height >= a.top
+
+    return horizontal && vertical
+}
+
+function crash(bird, barriers) {
+    let crash = false
+
+    barriers.pairs.forEach(duoBarrier => {
+        if (!crash) {
+            const upper = duoBarrier.upper.element
+            const lower = duoBarrier.lower.element
+    
+            crash = overlapping(bird.element, upper) || overlapping(bird.element, lower)            
+        }
+    })
+    return crash
+}
+
 function flappyBird() {
     let points = 0
 
@@ -140,7 +166,7 @@ function flappyBird() {
     const width = areaGame.clientWidth
 
     const progressVar = new progress()
-    const barriersVar = new barriers(height, width, 200, 400, () => progressVar.updatePoints(++points))
+    const barriersVar = new barriers(height, width, 250, 400, () => progressVar.updatePoints(++points))
         
     const birdVar = new bird(height)
 
@@ -149,11 +175,15 @@ function flappyBird() {
 
     barriersVar.pairs.forEach(pair => areaGame.appendChild(pair.element))
 
-    this.start = () => {
+    this.start = () => { //Temporizador
         const timer = setInterval(() => {
             barriersVar.animate()
             birdVar.animate()
-        }, 20) //Temporizador
+
+            if (crash(birdVar, barriersVar)) {
+                clearInterval(timer)
+            }
+        }, 20) 
     }
 }
 
